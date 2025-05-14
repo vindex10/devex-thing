@@ -1,0 +1,7 @@
+name: Test-Build-Deploy
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+     - name: test-build-deploy
+       uses: vindex10/devex-thing-deploy-generic 
