@@ -4,4 +4,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
      - name: test-build-deploy
-       uses: vindex10/devex-thing-deploy-generic 
+       uses: vindex10/devex-thing-deploy-generic@main
