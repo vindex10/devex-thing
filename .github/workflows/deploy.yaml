@@ -2,7 +2,15 @@ name: Test-Build-Deploy
 on: [workflow_dispatch]
 jobs:
   main:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     runs-on: ubuntu-latest
     steps:
-     - name: test-build-deploy
-       uses: vindex10/devex-thing-deploy-generic@main
+     - name: auth
+       uses: 'google-github-actions/auth@v2'
+       with:
+         project_id: "coop-test-459821"
+         service_account: 'github-actions@coop-test-459821.iam.gserviceaccount.com' 
+         workload_identity_provider: 'projects/1065245358733/locations/global/workloadIdentityPools/github-auth/providers/devex-thing'
