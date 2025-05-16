@@ -1,22 +1,21 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/magefile/mage/mg"
-	"github.com/vindex10/devex-thing/magefiles/commands"
+	"github.com/vindex10/devex-thing/magefiles/interpreter"
+	"github.com/vindex10/devex-thing/magefiles/interpreter/commands"
 )
 
 type Deployment mg.Namespace
 
-// Create new Deployment
-func (Deployment) Init(deploymentName string, imageName string, imageVersion string) {
-	fmt.Println(deploymentName, commands.KEYS.DeploymentInit)
+// -Create new Deployment
+func (Deployment) Init(deployment string, imageName string, imageVersion string) {
+	interpreter.WriteChangelogPatchCmd(commands.KEYS.DeploymentInit, deployment, commands.DeploymentInitArgs{ImageName: imageName, ImageVersion: imageVersion})
 }
 
 type Resources mg.Namespace
 
-// Replace resources
-func (Resources) Set(deploymentName string, ram string, cpu string) {
-	fmt.Println(deploymentName, commands.KEYS.ResourcesSet)
+// -Set resources
+func (Resources) Set(deployment string, ram string, cpu string) {
+	interpreter.WriteChangelogPatchCmd(commands.KEYS.ResourcesSet, deployment, commands.ResourcesSetArgs{Ram: ram, Cpu: cpu})
 }
