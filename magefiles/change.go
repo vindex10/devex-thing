@@ -7,6 +7,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
+
 	"github.com/vindex10/devex-thing/magefiles/common"
 	"github.com/vindex10/devex-thing/magefiles/interpreter"
 )
