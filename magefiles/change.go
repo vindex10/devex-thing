@@ -32,15 +32,25 @@ func (Change) Push() {
 func (Change) Apply(args string) {
 	flags := flag.NewFlagSet("change:apply", flag.PanicOnError)
 	deploy := flags.Bool("deploy", false, "Deploy changes to kubernetes cluster")
+	build := flags.Bool("build", false, "Build images before deploying")
 	argsArr, _ := shlex.Split(args)
 	flags.Parse(argsArr)
 
 	Change{}.Validate()
+	newImages := interpreter.GetNewImages()
+
 	if hasPatch() {
 		interpreter.DoPatch()
 	}
 	if hasManual() {
 		interpreter.DoManual()
+	}
+
+	if *build {
+		fmt.Println("Build!")
+		for _, newImage := range newImages {
+			fmt.Println(newImage.Name+":"+newImage.Version, " from ", newImage.Source)
+		}
 	}
 
 	if *deploy {
