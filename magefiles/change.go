@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"path"
 
 	"github.com/google/shlex"
 	"github.com/magefile/mage/mg"
@@ -38,6 +40,7 @@ func (Change) Apply(args string) {
 
 	Change{}.Validate()
 	newImages := interpreter.GetNewImages()
+	fmt.Println(newImages)
 
 	if hasPatch() {
 		interpreter.DoPatch()
@@ -47,9 +50,9 @@ func (Change) Apply(args string) {
 	}
 
 	if *build {
-		fmt.Println("Build!")
 		for _, newImage := range newImages {
-			fmt.Println(newImage.Name+":"+newImage.Version, " from ", newImage.Source)
+			fmt.Println("Building: "+newImage.Name+":"+newImage.Version, " from ", newImage.Source)
+			buildImage(newImage)
 		}
 	}
 
@@ -59,12 +62,34 @@ func (Change) Apply(args string) {
 	}
 }
 
+func buildImage(image interpreter.ImageSpec) error {
+	imageFullName := common.AssembleImageFullName(common.ARTIFACT_REGISTRY, image.Name, image.Version)
+	imageExistsErr := sh.Run("docker", "manifest", "inspect", imageFullName)
+	imageExists := sh.ExitStatus(imageExistsErr) == 0
+	if imageExists {
+		fmt.Println("Image exists. Skip build. " + imageFullName)
+		return nil
+	}
+	fmt.Println("Image is not available in the registry. Building. " + imageFullName)
+	repoDir, _ := common.MkdirTemp(image.Name)
+	common.Checked(sh.RunV("git", "clone", image.Source, repoDir))
+	os.Chdir(repoDir)
+	defer os.Chdir(common.GIT_ROOT)
+	common.Checked(sh.RunV("git", "reset", image.Version))
+	testsErr := sh.RunV("go", "test", "./...")
+	if testsErr != nil {
+		fmt.Println("Tests failed for ", imageFullName)
+		return testsErr
+	}
+	common.Checked(sh.RunV("docker", "build", "-f", path.Join(common.GIT_ROOT, "magefiles/assets/Dockerfile"), "-t", imageFullName, "."))
+	common.Checked(sh.RunV("docker", "push", imageFullName))
+	return nil
+}
+
 // -Validate Change for consistency
 func (Change) Validate() error {
-	sh.Run("cd", common.GIT_ROOT)
-	has_patch := hasPatch()
-	has_manual := hasManual()
-	if has_patch && has_manual {
+	os.Chdir(common.GIT_ROOT)
+	if hasPatch() && hasManual() {
 		return mg.Fatal(1, "Changelog patch can't be used together with the manual changes. Please split into different branches.")
 	}
 	return nil

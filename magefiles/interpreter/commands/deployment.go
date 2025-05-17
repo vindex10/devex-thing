@@ -25,7 +25,7 @@ func NewDeploymentInitArgs(ImageName string, ImageVersion string) DeploymentInit
 		AppName:       ImageName,
 		Replicas:      1,
 		ContainerPort: 8080,
-		ImageSource:   common.IMAGE_SOURCE,
+		ImageSource:   common.IMAGE_SOURCE + "/" + ImageName,
 		ImageRegistry: common.ARTIFACT_REGISTRY,
 	}
 }
@@ -57,16 +57,19 @@ spec:
     spec:
       containers:
       - name: {{ .P.AppName }}
-        image: {{ .P.ImageRegistry }}{{ .P.ImageName }}:{{ .P.ImageVersion }}
+        image: {{ .ImageFullName }}
         ports:
         - containerPort: {{ .P.ContainerPort }}
 `[1:])
+	imageFullName := common.AssembleImageFullName(args.ImageRegistry, args.ImageName, args.ImageVersion)
 	data := struct {
-		Deployment string
-		P          DeploymentInitArgs
+		Deployment    string
+		ImageFullName string
+		P             DeploymentInitArgs
 	}{
-		Deployment: deployment,
-		P:          args,
+		Deployment:    deployment,
+		ImageFullName: imageFullName,
+		P:             args,
 	}
 	deploymentDir := path.Join(common.DEPLOYMENTS_DIR, deployment)
 	os.Mkdir(deploymentDir, 0755)
