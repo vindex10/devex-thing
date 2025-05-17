@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1
+  labels:
+    app: devex-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devex-service
+  template:
+    metadata:
+      labels:
+        app: devex-service
+    spec:
+      containers:
+      - name: devex-service
+        image: europe-north1-docker.pkg.dev/coop-test-459821/prod/devex-service:v1.1.0
+        ports:
+        - containerPort: 8080
