@@ -1,1 +1,0 @@
-deployment_init	app2	{"ImageName":"devex-service","ImageVersion":"v1.0.0","AppName":"devex-service","Replicas":1,"ContainerPort":8080,"ImageSource":"https://github.com/vindex10/devex-service","ImageRegistry":"europe-north1-docker.pkg.dev/coop-test-459821/prod"}
