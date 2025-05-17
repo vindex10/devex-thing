@@ -5,6 +5,8 @@ import (
 	"path"
 	"text/template"
 
+	"github.com/magefile/mage/sh"
+
 	"github.com/vindex10/devex-thing/magefiles/common"
 )
 
@@ -72,12 +74,23 @@ spec:
 		P:             args,
 	}
 	deploymentDir := path.Join(common.DEPLOYMENTS_DIR, deployment)
-	os.Mkdir(deploymentDir, 0755)
+	os.MkdirAll(deploymentDir, 0755)
 	fout, _ := os.Create(path.Join(deploymentDir, "deployment.yaml"))
 	defer fout.Close()
 	tpl.Execute(fout, data)
 }
 
 func (c DeploymentInit) ApplyFromStr(deployment string, args string) error {
+	return CommandApplyFromStr(c, deployment, args)
+}
+
+type DeploymentDelete Command[DummyArgs]
+
+func (c DeploymentDelete) Apply(deployment string, args DummyArgs) error {
+	sh.Rm(path.Join(common.DEPLOYMENTS_DIR, deployment))
+	return nil
+}
+
+func (c DeploymentDelete) ApplyFromStr(deployment string, args string) error {
 	return CommandApplyFromStr(c, deployment, args)
 }

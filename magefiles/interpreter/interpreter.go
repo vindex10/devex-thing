@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/magefile/mage/sh"
+
 	"github.com/vindex10/devex-thing/magefiles/common"
 	"github.com/vindex10/devex-thing/magefiles/interpreter/commands"
 )
@@ -19,7 +21,7 @@ func DoPatch() {
 		line := strings.Join([]string{onePatch.Command, onePatch.Deployment, onePatch.Args}, "\t")
 		changelog.WriteString(line + "\n")
 	}
-	//sh.Run("rm", common.CHANGELOG_PATCH)
+	sh.Run("rm", common.CHANGELOG_PATCH)
 	fmt.Println("End doPatch")
 }
 

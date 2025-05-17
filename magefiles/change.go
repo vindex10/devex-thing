@@ -44,9 +44,11 @@ func (Change) Apply(args string) {
 
 	if hasPatch() {
 		interpreter.DoPatch()
-	}
-	if hasManual() {
+	} else if hasManual() {
 		interpreter.DoManual()
+	} else {
+		fmt.Println("No infrastructure changes introduced. Exit.")
+		return
 	}
 
 	if *build {
@@ -57,8 +59,14 @@ func (Change) Apply(args string) {
 	}
 
 	if *deploy {
-		//sh.RunV("kubectl", "apply", "--prune", "-f", common.DEPLOYMENTS_DIR, "-R")
-		fmt.Println("Deploy!")
+		emptyDeployments, err := common.IsDirEmpty(common.DEPLOYMENTS_DIR)
+		if !emptyDeployments {
+			sh.RunV("kubectl", "apply", "--prune", "--all", "-f", common.DEPLOYMENTS_DIR, "-R", "--namespace", common.NAMESPACE)
+			fmt.Println("Deploy!")
+		} else if emptyDeployments && err == nil {
+			fmt.Println("Empty deployments dir. Cleaning up")
+			sh.RunV("kubectl", "delete", "--all", "deployments", "--namespace", common.NAMESPACE)
+		}
 	}
 }
 
@@ -96,13 +104,32 @@ func (Change) Validate() error {
 }
 
 func hasPatch() bool {
-	_, has_patch_err := sh.Output("git", "diff", "--exit-code", common.RELEASE_BRANCH, "--", common.CHANGELOG_PATCH)
+	var base string
+	if onReleaseBranch() {
+		base = "HEAD^"
+	} else {
+		// On PR
+		base = common.RELEASE_BRANCH
+	}
+	_, has_patch_err := sh.Output("git", "diff", "--exit-code", base, "--", common.CHANGELOG_PATCH)
 	has_patch := sh.ExitStatus(has_patch_err)
 	return (has_patch != 0)
 }
 
 func hasManual() bool {
-	_, has_manual_err := sh.Output("git", "diff", "--exit-code", common.RELEASE_BRANCH, "--", common.DEPLOYMENTS_DIR)
+	var base string
+	if onReleaseBranch() {
+		base = "HEAD^"
+	} else {
+		// On PR
+		base = common.RELEASE_BRANCH
+	}
+	_, has_manual_err := sh.Output("git", "diff", "--exit-code", base, "--", common.DEPLOYMENTS_DIR)
 	has_manual := sh.ExitStatus(has_manual_err)
 	return (has_manual != 0)
+}
+
+func onReleaseBranch() bool {
+	currentBranch, _ := sh.Output("git", "rev-parse", "--abbrev-ref", "HEAD")
+	return currentBranch == common.RELEASE_BRANCH
 }

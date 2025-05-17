@@ -43,6 +43,10 @@ func parseImageRegistry(imageName string) (string, string) {
 	return imageRegistry, parts[len(parts)-1]
 }
 
+func (Deployment) Delete(deployment string) {
+	interpreter.WriteChangelogPatchCmd(commands.KEYS.DeploymentDelete, deployment, commands.DummyArgs{})
+}
+
 type Resources mg.Namespace
 
 // -Set resources

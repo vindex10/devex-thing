@@ -3,14 +3,61 @@ on: [workflow_dispatch]
 jobs:
   main:
     permissions:
-      contents: 'read'
+      contents: 'write'
       id-token: 'write'
 
     runs-on: ubuntu-latest
     steps:
-     - name: auth
-       uses: 'google-github-actions/auth@v2'
-       with:
-         project_id: "coop-test-459821"
-         service_account: 'github-actions@coop-test-459821.iam.gserviceaccount.com' 
-         workload_identity_provider: 'projects/1065245358733/locations/global/workloadIdentityPools/github-auth/providers/devex-thing'
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 5
+      - name: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: "coop-test-459821"
+          service_account: 'github-actions@coop-test-459821.iam.gserviceaccount.com'
+          export_environment_variables: true
+          create_credentials_file: true
+          workload_identity_provider: 'projects/1065245358733/locations/global/workloadIdentityPools/github-auth/providers/devex-thing'
+      - name: docker login
+        shell: bash
+        run: |
+          # https://cloud.google.com/artifact-registry/docs/docker/authentication
+          VERSION=2.1.29
+          OS=linux  # or "darwin" for OSX, "windows" for Windows.
+          ARCH=amd64  # or "386" for 32-bit OSsk
+          curl -fsSL "https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v${VERSION}/docker-credential-gcr_${OS}_${ARCH}-${VERSION}.tar.gz" \
+          | tar xz docker-credential-gcr \
+          && chmod +x docker-credential-gcr && sudo mv docker-credential-gcr /usr/bin/
+          docker-credential-gcr configure-docker --registries=europe-north1-docker.pkg.dev
+      - name: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v2'
+        with:
+          cluster_name: 'cluster-1'
+          location: 'europe-north1-a'
+      - name: Run
+        shell: bash
+        run: |
+          set -v
+          currentRev=$(git rev-parse HEAD)
+          mainRev=$(git rev-parse main)
+          if [[ "$currentRev" != "$mainRev" ]]; then
+            # this commit is not latest in the main branch. exit
+            exit 1
+          fi
+          git checkout main
+          if ! git diff --exit-code HEAD^ -- changelog ; then
+            # commit is the automation release, noop.
+            exit 0
+          fi
+          go install github.com/magefile/mage@latest
+          ~/go/bin/mage change:apply '--build --deploy'
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git config user.name 'github-actions[bot]'
+          git add deployments/ || true
+          git add changelog.patch || true
+          git add changelog || true
+          git commit -m 'autorelease'
+          git rev-parse HEAD
+          git push

@@ -5,16 +5,19 @@ import (
 )
 
 var KEYS = struct {
-	DeploymentInit string
-	ResourcesSet   string
+	DeploymentInit   string
+	DeploymentDelete string
+	ResourcesSet     string
 }{
 	"deployment_init",
+	"deployment_delete",
 	"resources_set",
 }
 
 var CMD = map[string]StrCommander{
-	KEYS.DeploymentInit: DeploymentInit{Key: KEYS.ResourcesSet},
-	KEYS.ResourcesSet:   ResourcesSet{Key: KEYS.ResourcesSet},
+	KEYS.DeploymentInit:   DeploymentInit{Key: KEYS.DeploymentInit},
+	KEYS.DeploymentDelete: DeploymentDelete{Key: KEYS.DeploymentDelete},
+	KEYS.ResourcesSet:     ResourcesSet{Key: KEYS.ResourcesSet},
 }
 
 type Commander[T any] interface {
@@ -45,3 +48,5 @@ func DeserializeArgs[T any](args string) T {
 	json.Unmarshal([]byte(args), &r)
 	return r
 }
+
+type DummyArgs = struct{}
