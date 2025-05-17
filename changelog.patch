@@ -1,0 +1,2 @@
+deployment_delete	app1	{}
+deployment_delete	app2	{}
