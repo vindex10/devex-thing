@@ -5,19 +5,19 @@ import (
 )
 
 var KEYS = struct {
-	DeploymentInit   string
-	DeploymentDelete string
-	ResourcesSet     string
+	DeploymentInit     string
+	DeploymentDelete   string
+	ResourcesSetLimits string
 }{
 	"deployment_init",
 	"deployment_delete",
-	"resources_set",
+	"resources_set_limits",
 }
 
 var CMD = map[string]StrCommander{
-	KEYS.DeploymentInit:   DeploymentInit{Key: KEYS.DeploymentInit},
-	KEYS.DeploymentDelete: DeploymentDelete{Key: KEYS.DeploymentDelete},
-	KEYS.ResourcesSet:     ResourcesSet{Key: KEYS.ResourcesSet},
+	KEYS.DeploymentInit:     DeploymentInit{Key: KEYS.DeploymentInit},
+	KEYS.DeploymentDelete:   DeploymentDelete{Key: KEYS.DeploymentDelete},
+	KEYS.ResourcesSetLimits: ResourcesSetLimits{Key: KEYS.ResourcesSetLimits},
 }
 
 type Commander[T any] interface {

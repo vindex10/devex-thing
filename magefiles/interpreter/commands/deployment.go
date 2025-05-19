@@ -75,7 +75,7 @@ spec:
 	}
 	deploymentDir := path.Join(common.DEPLOYMENTS_DIR, deployment)
 	os.MkdirAll(deploymentDir, 0755)
-	fout, _ := os.Create(path.Join(deploymentDir, "deployment.yaml"))
+	fout, _ := os.Create(path.Join(deploymentDir, common.DEPLOYMENT_FILE))
 	defer fout.Close()
 	tpl.Execute(fout, data)
 }

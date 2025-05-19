@@ -50,6 +50,6 @@ func (Deployment) Delete(deployment string) {
 type Resources mg.Namespace
 
 // -Set resources
-func (Resources) Set(deployment string, ram string, cpu string) {
-	interpreter.WriteChangelogPatchCmd(commands.KEYS.ResourcesSet, deployment, commands.ResourcesSetArgs{Ram: ram, Cpu: cpu})
+func (Resources) SetLimits(deployment string, memory string, cpu string) {
+	interpreter.WriteChangelogPatchCmd(commands.KEYS.ResourcesSetLimits, deployment, commands.ResourcesSetLimitsArgs{Memory: memory, Cpu: cpu})
 }
