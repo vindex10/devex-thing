@@ -43,6 +43,7 @@ func parseImageRegistry(imageName string) (string, string) {
 	return imageRegistry, parts[len(parts)-1]
 }
 
+//  -Delete deployment
 func (Deployment) Delete(deployment string) {
 	interpreter.WriteChangelogPatchCmd(commands.KEYS.DeploymentDelete, deployment, commands.DummyArgs{})
 }
@@ -51,5 +52,6 @@ type Resources mg.Namespace
 
 // -Set resources
 func (Resources) SetLimits(deployment string, memory string, cpu string) {
+	// add validation, that deployment should exist: either in the changelog.patch or in the repo
 	interpreter.WriteChangelogPatchCmd(commands.KEYS.ResourcesSetLimits, deployment, commands.ResourcesSetLimitsArgs{Memory: memory, Cpu: cpu})
 }
